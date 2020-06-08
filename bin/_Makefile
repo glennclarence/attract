@@ -8,7 +8,7 @@ OBJ0= read_hm.o read_dof.o read_parameters.o read_pdb.o write_pdb.o print_struc.
   euler2torquemat.o memcpy.o disre.o moderest.o atomdensitygrid.o \
   axsym.h axsym.o weight_atoms.o ministate.o grid_sharedfuncs.o
 
-OBJ= $(OBJ0) nonbon8.o
+OBJ= $(OBJ0) nonbon8.o nonbon_soft.o
 H=state.h max.h grid.h nonbon.h max.fin
 FF=gfortran
 
@@ -35,7 +35,7 @@ CFLAGS = -g -p -O3 -ffast-math -Wall
 attract: attract.o grid.o grid-torque.o $(OBJ)
 	$(CXX) $(CFLAGS)  $^ -lgfortran -lrt -o $@
 
-attract-infinite: attract.o grid.o grid-torque.o nonbon8-infinite.o $(OBJ0)
+attract-infinite: attract.o grid.o grid-torque.o nonbon8-infinite.o nonbon_soft-infinite.o $(OBJ0) 
 	$(CXX) $(CFLAGS)  $^ -lgfortran -lrt -o $@
 
 collect: collect.o read_parameters.o read_pdb.o read_pdb2.o read_dof.o \
