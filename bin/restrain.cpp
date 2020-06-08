@@ -648,6 +648,136 @@ inline void restrain_type_10(double weight, const Restraint &r, int iab, const C
   }
 }
 
+
+inline void restrain_type_11(double weight, const Restraint &r, int iab, const Coor *x, Coor *f, double &energy)
+{
+  //Double sided harmonic potential mainly ment for docking using Crosslinks
+  if (r.s1 == 1 && r.s2 == 1)
+  {
+    int atomnr1 = r.selection1[0] - 1;
+    const Coor &a1 = x[atomnr1];
+    int atomnr2 = r.selection2[0] - 1;
+    const Coor &a2 = x[atomnr2];
+
+    double disx = a1[0] - a2[0];
+    double disy = a1[1] - a2[1];
+    double disz = a1[2] - a2[2];
+    double dsq = disx * disx + disy * disy + disz * disz;
+    double limsqmin = r.par1 * r.par1;
+    double limsqmax = r.par3 * r.par3;
+
+    if (limsqmin > dsq)
+    {
+      //printf("ENERGY: 0\n");
+
+      double cforce = r.par2;
+      double dis = sqrt(dsq);
+      double violation = r.par1 - dis;
+      double violationsq = violation * violation;
+      energy += 0.5 * weight * cforce * violationsq;
+      if (iab)
+      {
+        double factor = violation / dis;
+        Coor force = {weight * disx * cforce * factor,
+                      weight * disy * cforce * factor,
+                      weight * disz * cforce * factor};
+        Coor &f1 = f[atomnr1];
+        f1[0] += force[0];
+        f1[1] += force[1];
+        f1[2] += force[2];
+        Coor &f2 = f[atomnr2];
+        f2[0] -= force[0];
+        f2[1] -= force[1];
+        f2[2] -= force[2];
+      }
+    }
+    else if (limsqmax < dsq)
+    {
+      double cforce = r.par4;
+      double dis = sqrt(dsq);
+      double violation = dis - r.par3;
+      double violationsq = violation * violation;
+      energy += weight * 0.5 * cforce * violationsq;
+      if (iab)
+      {
+        double factor = violation / dis;
+        Coor force = {weight * disx * cforce * factor,
+                      weight * disy * cforce * factor,
+                      weight * disz * cforce * factor};
+        Coor &f1 = f[atomnr1];
+        f1[0] -= force[0];
+        f1[1] -= force[1];
+        f1[2] -= force[2];
+        Coor &f2 = f[atomnr2];
+        f2[0] += force[0];
+        f2[1] += force[1];
+        f2[2] += force[2];
+      }
+    }
+  }
+}
+
+inline void restrain_type_12(double weight, const Restraint &r, int iab, const Coor *x, Coor *f, double &energy)
+{
+    // Dip potential as described in the master thesis by Glenn Glashagen figure 5.4 (b)
+  if (r.s1 == 1 && r.s2 == 1)
+  {
+    int atomnr1 = r.selection1[0] - 1;
+    const Coor &a1 = x[atomnr1];
+    int atomnr2 = r.selection2[0] - 1;
+    const Coor &a2 = x[atomnr2];
+
+    double disx = a1[0] - a2[0];
+    double disy = a1[1] - a2[1];
+    double disz = a1[2] - a2[2];
+    double dsq = disx * disx + disy * disy + disz * disz;
+    double dis = sqrt(dsq);
+    double off_min = r.par1;
+    double off_max = r.par2;
+    double width = r.par3;
+    double cforce = r.par4;
+
+    Coor force = {0,0,0};
+    if ( dis <= off_min  && dis > off_min - width) {
+        double t1 = (dis- off_min)/width;
+        double t2 = 1 - t1*t1;
+        energy += -cforce*t2*t2;
+        force[0] = 4 * disx * cforce * t1 * t2 / ( dis * width);
+        force[1] = 4 * disy * cforce * t1 * t2 / ( dis * width);
+        force[2] = 4 * disz * cforce * t1 * t2 / ( dis * width);
+        Coor &f1 = f[atomnr1];
+        f1[0] -= force[0];
+        f1[1] -= force[1];
+        f1[2] -= force[2];
+        Coor &f2 = f[atomnr2];
+        f2[0] += force[0];
+        f2[1] += force[1];
+        f2[2] += force[2];
+    }
+
+    else if( dis >= off_max && dis < off_max + width){
+
+        double t1 = (dis- off_max)/width;
+        double t2 = 1 - t1*t1;
+        energy += -cforce*t2*t2;
+        force[0] = 4 * disx * cforce * t1 * t2 / ( dis * width);
+        force[1] = 4 * disy * cforce * t1 * t2 / ( dis * width);
+        force[2] = 4 * disz * cforce * t1 * t2 / ( dis * width);
+        Coor &f1 = f[atomnr1];
+        f1[0] -= force[0];
+        f1[1] -= force[1];
+        f1[2] -= force[2];
+        Coor &f2 = f[atomnr2];
+        f2[0] += force[0];
+        f2[1] += force[1];
+        f2[2] += force[2];
+    }    
+    else if( dis > off_min && dis < off_max){
+        energy += -cforce;
+    }
+  }
+}
+
 extern "C" void restrain_(const int &ministatehandle, const int &cartstatehandle, const int &seed, const int &iab, double &energy) {
   MiniState &ms = ministate_get(ministatehandle);
   CartState &cs = cartstate_get(cartstatehandle);
@@ -671,5 +801,7 @@ extern "C" void restrain_(const int &ministatehandle, const int &cartstatehandle
     if (r.type == 8) restrain_type_8(r,iab,x,f,energy);
     if (r.type == 9) restrain_type_9(weight,r,iab,x,f,energy);
     if (r.type == 10) restrain_type_10(weight,r,iab,x,f,energy);  
+    if (r.type == 11) restrain_type_11(weight,r,iab,x,f,energy);
+    if (r.type == 12) restrain_type_12(weight,r,iab,x,f,energy);  
   }
 }
