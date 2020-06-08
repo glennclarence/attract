@@ -57,10 +57,16 @@ restraint types:
 
     label label 10 1.24 25.5     
     (dihedral is calculated for the group of atoms in "label", equi-dihedral: 1.24 radians, 
-    force constant:25.5 kcal/mol/rad**2)
+    force constant:25.5 kcal/mol/rad**2)11: double harmonic potential:
+    The potential rises to the distance squared below and above
+    a lower ( distancemin) and upper threshold (distancemax), respectively. The stepness at which the potential rises below distancemin and above distancemax is controlled via the parameters cmin and cmax respectively.
+    <type> <distancemin> <cmin> <distancemax> <cmax> See below for explanation of type etc
 
-
-
+12:
+    This potential is flat for any distances between xmin and xmax below xmin−width and
+    above xmax+width; however, it exhibits a dip between xmin and xmax with a depth of c
+    given in kcal mol−1. In between xmin and xmin - width as well as xmax and xmax + width the potential is of the following shape: −c · (1 − ((x−xmin) / width)²)².
+   <type> <xmin> <xmax> <width> <c> 
 
 
 The "chance of random removal" indicates the chance that a restraint is not used at all.

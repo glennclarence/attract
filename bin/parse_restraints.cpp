@@ -106,7 +106,7 @@ void parse_restraintfile(MiniState &ms, const char *restfile) {
       }
       else {
         r.type = atoi(fields[2]);
-        if (r.type > 10 || r.type == 7) {
+        if (r.type > 12 || r.type == 7) {
           fprintf(stderr, "Reading error in %s, line %d: Restraint type %s not supported\n", restfile, line, fields[2]);
           exit(1);      
         }
@@ -123,7 +123,7 @@ void parse_restraintfile(MiniState &ms, const char *restfile) {
       }  
       r.maxindex = maxindex;
 
-      if (r.type > 10) {
+      if (r.type > 12) {
         fprintf(stderr, "Reading error in %s, line %d: Restraint type %s not supported\n", restfile, line, fields[2]);
 	exit(1);      
       }
