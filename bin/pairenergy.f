@@ -292,13 +292,23 @@ c      therefore, we must rotate the pm2 matrix
        enddo
        enddo
        endif
-
-       call nonbon_grid(gridptr,torquegrid,rigid,iab,fixre,
+       if (use_StepPot(cartstatehandle)) then
+        call nonbon_grid_nonbonstep(gridptr, torquegrid, rigid, 
+     1         iab, fixre, xl, xr, pivotr, tr,
+     2         wel, wer, chail, chair, iacil, iacir, natoml, natomr,
+     3         rc, ac, emin, rmin2, ipon, potshape, cdie, epsilon,
+     4         swi_on, swi_off,
+     5         fl, enon, epote, fr, pm2, deltar0, cartstatehandle)
+            
+       else
+        call nonbon_grid(gridptr,torquegrid,rigid,iab,fixre,
      1  xl,xr,pivotr,tr,
      2  wel,wer,chail,chair,iacil,iacir,natoml,natomr,
      3  rc,ac,emin,rmin2,ipon,potshape,cdie,epsilon,
      4  swi_on, swi_off,
      5  fl,enon,epote,fr,pm2,deltar0) 
+       endif
+
 c      rotate delta-translate back into global frame
 
        call rotate1(3*maxatom,

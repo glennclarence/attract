@@ -140,7 +140,7 @@ const Parameters &rc, const Parameters &ac, const Parameters &emin, const Parame
   Coor *fr, const double (&pm2)[3][3][3], double *deltar,const int cartstatehandle);
 
 
-extern "C" void nonbon_grid_nonbonstep(
+extern "C" void nonbon_grid_nonbonstep_(
   const Grid *&g, const int &torquegrid, const int &rigid, 
   const int &iab, const int &fixre,
   const Coor *xl, const Coor *xr,const Coor &pivotr,const Coor &tr,  
