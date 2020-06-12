@@ -80,6 +80,13 @@ extern "C" void ministate_f_monte_(const int &handle, int &iscore, int &imcmax, 
   mctemp = ms.mctemp; mcscalerot = ms.mcscalerot; mcscalecenter = ms.mcscalecenter; mcscalemode = ms.mcscalemode; mcensprob = ms.mcensprob;
 }
 
+extern "C" void ministate_f_monte_step_(const int &handle, int &iscore, int &imcmax, int &iori, int &itra, int &ieig, int &iindex, int &fixre, double &mctemp, double &mcscalerot, double &mcscalecenter, double &mcscalemode, double &mcensprob) {
+  MiniState &ms = *ministates[handle];
+  iscore=ms.iscore; imcmax = ms.imcmax;iori = ms.iori;itra = ms.itra;ieig = ms.ieig; iindex=ms.iindex;
+  fixre = ms.fixre;
+  mctemp = ms.mctemp; mcscalerot = ms.mcscalerot; mcscalecenter = ms.mcscalecenter; mcscalemode = ms.mcscalemode; mcensprob = ms.mcensprob;
+}
+
 extern "C" void ministate_f_monte_min_(const int &handle, int &iscore, int &imcmax, int &iori, int &itra, int &ieig, int &iindex, int &fixre,  double &mctemp, double &mcmtemp, double &mcscalerot, double &mcscalecenter, double &mcscalemode, double &mcensprob) {
   MiniState &ms = *ministates[handle];
   iscore=ms.iscore; imcmax = ms.imcmax;iori = ms.iori;itra = ms.itra;ieig = ms.ieig; iindex=ms.iindex;
