@@ -3,6 +3,7 @@
 
 #include "max.h"
 #include "grid.h"
+#include <vector>
 
 struct AxSymmetry {
   int ligand;
@@ -59,24 +60,36 @@ struct CartState {
   double index_val[MAXLIG][MAXINDEXMODE][MAXLENINDEXMODE]; //index modes: values of nonzero mode entries
 
   /* copies */
-  int ncop[TOTMAXRES][21][11];
+  int ncop[TOTMAXRES][21][MAXCOPIES];
   int nmaxco[TOTMAXRES];
   int natco[TOTMAXRES];
 
   /* forcefield parameters */
   Parameters rbc;  
-  Parameters rc;
-  Parameters ac;
-  Parameters emin;
-  Parameters rmin2;
-  iParameters ipon;
+  Parameters rc; //repusive param (radius of both atomtypes in pair?)
+  Parameters ac;  //attractive p.
+  Parameters emin;  //minimum of LJ pot.
+  Parameters rmin2; //distance at minimum
+  iParameters ipon; //-1 if repulsive only, normal is 1
   iParameters haspar;
   int potshape; //potential shape
   int cdie; //use constant dielectric
   double epsilon; //dielectric constant
   float swi_on; //start (A) of switching
   float swi_off;  //end (A) of switching
-
+  /*step potential */
+  bool useStepPot;
+  
+  /* *vector<double> [MAXATOMTYPES_EXT] [MAXATOMTYPES_EXT] stepPot_dist; //array of pointers to distance-vectors, pot. mem-leak...
+      * vector<double> [MAXATOMTYPES_EXT] [MAXATOMTYPES_EXT] stepPot_energy; //.. to energy-vectors
+      */  
+  static const int step_nrDists=3; static const int step_nrTypes=27;
+  std::vector<double> stepPot_dist;
+  // for parameterized step-distances
+  //double stepPot_dist [step_nrDists][step_nrTypes] [step_nrTypes];
+  //float stepPot_energy [2][MAXATOMTYPES_EXT] [MAXATOMTYPES_EXT];
+  double stepPot_energy [step_nrDists][step_nrTypes] [step_nrTypes];
+    
   /* grid representations */
   Grid *grids[MAXLIG];  
   
@@ -121,7 +134,7 @@ struct CartState {
 struct MolPair {
   int receptor;
   int ligand;
-  int *iactr; //iactr[MAXATOM];
+  int *iactr; //iactr[MAXATOM];tells us if atom is active (=1) or inactive(=0) ->used for right copies
   int *iactl; //iactl[MAXATOM];
   int nonp;              //pairlist: number of pairs
   int *nonr; //nonr[MAXMOLPAIR]  //pairlist: receptor atom
@@ -160,6 +173,8 @@ struct MiniState {
   int iscore;  //scoring mode: 0 = normal, 1 = scoring, 2 = trajectory
   int ivmax; //max steps
   int imcmax; //max MC steps
+  int imcprobs[MAXMOVER];
+
   int iori;  //enable orientations
   int itra;  //enable translations
   int ieig;  //enable mode displacement
@@ -172,6 +187,8 @@ struct MiniState {
   int has_globalenergy; //1 = the energy has a global component, globalenergy must be called
   int gravity; //gravity modes: 0 = off, 1 = to global origin, 2 = to receptor origin, 3 = to all other centers;
   double rstk; //gravity force constant
+  double ub; //gravity distance upper bound cutoff ...more like "lower bound"? ub is substracted from real distance in disre.f
+
   double restweight; //restraint weight
   bool ghost;
   bool ghost_ligands; //if enabled, ligands don't see each other, only the receptor
@@ -181,7 +198,7 @@ typedef int (&intarr)[TOTMAXATOM];
 typedef double (&dbl3arr)[3*TOTMAXATOM];
 typedef double (&dblarr)[TOTMAXATOM];
 typedef char (&codearr)[TOTMAXATOM][4];
-typedef int (&ncopligtype)[TOTMAXRES][21][11];
+typedef int (&ncopligtype)[TOTMAXRES][21][MAXCOPIES];
 typedef int (&copyarr)[TOTMAXRES];
 typedef int (&limitarr)[MAXLIG];
 

@@ -17,6 +17,10 @@ const int MAXLENINDEXMODE = 10; //maximum number of nonzero entries in index mod
 const int MAXINDEXMODE = 1000; // maximum number of index modes for flexible interface
 const int MAXGRIDNEIGHBOUR = 200000000; //maximum size of total neighbour grid; 10 bytes per item 
 
+const int MAXCOPIES=31; //ALSO CHANGE IN read_pdb.f, max number of allowed copies per residue, used by cartsate.ncop -> more leads to overwrite!
+const int MAXMOVER = 4; // monte carlo mover number; rigid_body & ensemble & both & side-chain switching now
+
+
 typedef char char4[4];
 typedef double dof2[MAXLIG];
 typedef int idof2[MAXLIG];
