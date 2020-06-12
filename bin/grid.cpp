@@ -12,7 +12,8 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-
+#include "nonbon_step.h"
+#define STEPPOT 1
 #ifdef TORQUEGRID
   #define EnerGradX EnerGradTorque
   #define energradsX energrads_torque
@@ -807,3 +808,134 @@ const Parameters &rc, const Parameters &ac, const Parameters &emin, const Parame
 #endif
 }  
   
+
+
+
+
+inline void trilin_nonbon_step(
+    const Coor &d, int atomtype, double charge0, double charge, double wel,                              //ligand
+    const Grid &g, bool rigid, const Coor *xr, const double *wer, const double *chair, const int *iacir, //receptor
+
+    const Parameters &rc, const Parameters &ac, const Parameters &emin, const Parameters &rmin2,
+    const iParameters &ipon, int potshape, int cdie, float swi_on, float swi_off, //ATTRACT params
+
+    int iab, int fixre, double &evdw, double &eelec, Coor &grad, //output
+
+    Coor *fr, double *deltar, int cartstatehandle //receptor
+    )
+{
+
+  double ax = (d[0] - g.ori[0]) / g.gridspacing;
+  double ay = (d[1] - g.ori[1]) / g.gridspacing;
+  double az = (d[2] - g.ori[2]) / g.gridspacing;
+  //std::cerr << "Ligand position " << d[0] << " " << d[1] << " " << d[2] << "\n";
+  //std::cerr << "Grid " << ax << " " << ay << " " << az << "\n";
+
+  bool inside = ((ax >= 0 && ax < g.gridx - 1) &&
+                 (ay >= 0 && ay < g.gridy - 1) &&
+                 (az >= 0 && az < g.gridz - 1));
+  int gx, gy;
+  if (!inside)
+  {
+  }
+  else
+  {
+    gx = g.gridx;
+    gy = g.gridy;
+  }
+  // std::cerr << "Grid points " << ax << " " << ay << " " << az << "\n";
+
+  // std::cerr << "After adding potential " << evdw << "\n";
+  if (inside)
+  {
+    int pxj = floor(ax + 0.5);
+    int pyj = floor(ay + 0.5);
+    int pzj = floor(az + 0.5);
+    if (pxj < g.gridx && pyj < g.gridy && pzj < g.gridz)
+    {
+      int index = pxj + gx * pyj + gx * gy * pzj;
+      Voxel &v = g.innergrid[index];
+      if (v.nr_neighbours > 0)
+      {
+        for (int i = 0; i < v.nr_neighbours; i++)
+        {
+          Neighbour &nb = g.neighbours[v.neighbourlist + i - 1];
+          if (rigid && nb.type == 2)
+            continue;
+          const Coor &dd = xr[nb.index];
+
+          Coor dis = {
+              d[0] - dd[0],
+              d[1] - dd[1],
+              d[2] - dd[2],
+          };
+
+          double dsq = dis[0] * dis[0] + dis[1] * dis[1] + dis[2] * dis[2];
+          if (dsq < 2.0)
+          {
+            //throw error();
+          }
+          if (dsq > g.plateaudissq)
+            continue;
+          int atomtype2 = iacir[nb.index] - 1;
+          // if (atomtype2 < 0) should not happen, makegrid does not add them 
+          //    {  continue;}
+
+          //atomtype, atomtype2,dsq=dist^2
+
+          //if (use_steppot_(cartstatehandle)) {
+          evdw += nonbon_step_cartstate(cartstatehandle, atomtype, atomtype2, sqrt(dsq));
+
+          //	    std::cerr << "New vdW energy " << evdw << " = oldenergy - " << evdw0 << "\n";
+        }
+      }
+    }
+
+  } //end inside
+}
+
+#ifdef TORQUEGRID
+extern "C" void nonbon_grid_nonbonstep_torque(
+#else
+extern "C" void nonbon_grid_nonbonstep_std(
+#endif
+    const Grid *&g, const int &rigid,
+    const int &iab, const int &fixre,
+    const Coor *xl, const Coor *xr, const Coor &pivotr, const Coor &tr,
+    const double *wel, const double *wer, const double *chail, const double *chair, const int *iacil, const int *iacir,
+    const int &natoml, const int &natomr,
+
+    const Parameters &rc, const Parameters &ac, const Parameters &emin, const Parameters &rmin2,
+    const iParameters &ipon, const int &potshape, const int &cdie, const double &epsilon,
+    const float &swi_on, const float &swi_off,
+    //ATTRACT params
+
+    Coor *fl, double &evdw, double &eelec,
+
+    Coor *fr, const double (&pm2)[3][3][3], double *deltar, const int cartstatehandle)
+{
+
+  double ffelec = sqrt(felec / epsilon);
+
+  evdw = 0;
+  eelec = 0;
+  int counter2 = 0;
+  for (int n = 0; n < natoml; n++)
+  {
+    int atomtype = iacil[n] - 1;
+    if (atomtype == -1)
+      continue;
+    counter2++;
+    double charge0 = chail[n];
+    double charge = charge0 / ffelec;
+    Coor &grad = fl[n];
+    const Coor &d = xl[n];
+    // std::cerr << "Processing atoms " << n << " " << d[0] << " " << d[1] << " " << d[2] << " Receptor: ";
+
+    trilin_nonbon_step(xl[n], atomtype, charge0, charge, wel[n], *g, rigid, xr, wer, chair, iacir,
+           rc, ac, emin, rmin2, ipon, potshape, cdie, swi_on, swi_off, iab, fixre, evdw, eelec, grad, fr, deltar, cartstatehandle);
+
+    //   std::cerr << "Atom energy" << n << " " << evdw << " " << eelec << "\n";
+  }
+  // std::cerr << "Energy from grid " << evdw << " " << eelec << "\n";
+}

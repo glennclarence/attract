@@ -102,3 +102,72 @@ const Parameters &rc, const Parameters &ac, const Parameters &emin, const Parame
     ); 
   }
 }
+
+
+
+extern "C" void nonbon_grid_nonbonstep_std(
+  const Grid *&g, const int &rigid, 
+  const int &iab, const int &fixre,
+  const Coor *xl, const Coor *xr,const Coor &pivotr,const Coor &tr,  
+  const double *wel, const double *wer, const double *chail, const double *chair, const int *iacil, const int *iacir, 
+  const int &natoml,const int &natomr,
+
+const Parameters &rc, const Parameters &ac, const Parameters &emin, const Parameters &rmin2,
+  const iParameters &ipon, const int &potshape, const int &cdie, const double &epsilon,
+  const float &swi_on, const float &swi_off, 
+  //ATTRACT params
+  
+  Coor *fl, double &evdw, double &eelec,
+  
+  Coor *fr, const double (&pm2)[3][3][3], double *deltar,const int cartstatehandle);
+
+
+
+extern "C" void nonbon_grid_nonbonstep_torque(
+  const Grid *&g, const int &rigid, 
+  const int &iab, const int &fixre,
+  const Coor *xl, const Coor *xr,const Coor &pivotr,const Coor &tr,  
+  const double *wel, const double *wer, const double *chail, const double *chair, const int *iacil, const int *iacir, 
+  const int &natoml,const int &natomr,
+
+const Parameters &rc, const Parameters &ac, const Parameters &emin, const Parameters &rmin2,
+  const iParameters &ipon, const int &potshape, const int &cdie, const double &epsilon,
+  const float &swi_on, const float &swi_off, 
+  //ATTRACT params
+  
+  Coor *fl, double &evdw, double &eelec,
+  
+  Coor *fr, const double (&pm2)[3][3][3], double *deltar,const int cartstatehandle);
+
+
+extern "C" void nonbon_grid_nonbonstep(
+  const Grid *&g, const int &torquegrid, const int &rigid, 
+  const int &iab, const int &fixre,
+  const Coor *xl, const Coor *xr,const Coor &pivotr,const Coor &tr,  
+  const double *wel, const double *wer, const double *chail, const double *chair, const int *iacil, const int *iacir, 
+  const int &natoml,const int &natomr,
+
+const Parameters &rc, const Parameters &ac, const Parameters &emin, const Parameters &rmin2,
+  const iParameters &ipon, const int &potshape, const int &cdie, const double &epsilon,
+  const float &swi_on, const float &swi_off, 
+  //ATTRACT params
+  
+  Coor *fl, double &evdw, double &eelec,
+  
+  Coor *fr, const double (&pm2)[3][3][3], double *deltar, int & cartstatehandle)
+{
+  if (torquegrid) {
+    nonbon_grid_nonbonstep_torque(
+     g,rigid,iab,fixre,xl,xr,pivotr,tr,wel,wer,chail,chair,iacil,iacir,natoml,natomr,
+     rc,ac,emin,rmin2,ipon,potshape,cdie,epsilon,swi_on,swi_off,
+     fl,evdw,eelec,fr,pm2,deltar,cartstatehandle
+    ); 
+  }    
+  else {  
+    nonbon_grid_nonbonstep_std(
+     g,rigid,iab,fixre,xl,xr,pivotr,tr,wel,wer,chail,chair,iacil,iacir,natoml,natomr,
+     rc,ac,emin,rmin2,ipon,potshape,cdie,epsilon,swi_on,swi_off,
+     fl,evdw,eelec,fr,pm2,deltar,cartstatehandle
+    ); 
+  }
+}
