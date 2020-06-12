@@ -7,7 +7,7 @@ OBJ0= read_hm.o read_dof.o read_parameters.o read_pdb.o write_pdb.o print_struc.
   axisrot.o crand.o sym.o enstrans.o ene_morph.cpp \
   euler2torquemat.o memcpy.o disre.o moderest.o atomdensitygrid.o \
   axsym.h axsym.o weight_atoms.o ministate.o grid_sharedfuncs.o \
-  nonbon_step.o random_mover.o random_point_on_unit_sphere.o R_to_axis_angle.o random_rotation_angle.o rigid_body_mover.o random.o
+  nonbon_step.o random_mover.o random_point_on_unit_sphere.o R_to_axis_angle.o readParam_step.o random_rotation_angle.o rigid_body_mover.o random.o
 
 OBJ= $(OBJ0) nonbon8.o nonbon_soft.o
 H=state.h max.h grid.h nonbon.h max.fin

@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <stdexcept>
+#include "readParam_step.h"
 
 extern bool exists(const char *);
 extern void parse_restraintfile(MiniState &ms, const char *restfile);
