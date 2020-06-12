@@ -9,6 +9,8 @@
 
 c      Parameters
        include "max.fin"
+       logical use_StepPot
+       external use_StepPot
        integer cartstatehandle,molpairhandle
        integer iab, fixre
        integer gridptr_dmmy
@@ -311,6 +313,10 @@ c       write(ERROR_UNIT,*), xl(3*132+1:3*132+3), xr(3*1704+1:3*1704+3)
       call nonbon8(iab,xl,xr,fl,fr,wel,wer,chair,chail,ac,rc,
      1     emin,rmin2,iacir,iacil,nonr,nonl,ipon,nonp,
      2     potshape,cdie,swi_on,swi_off,enon,epote,natomr,natoml)
+       
+       else if (use_StepPot(cartstatehandle)) then
+       call nonbon_step(xl, xr,iacir, iacil, nonr,  nonl,   nonp,
+     1      enon,  epote, cartstatehandle) 
        else
        call nonbon_soft(iab,xl,xr,fl,fr,wel,wer,chair,chail,ac,rc,
      1     emin,rmin2,iacir,iacil,nonr,nonl,ipon,nonp,
