@@ -6,7 +6,8 @@ OBJ0= read_hm.o read_dof.o read_parameters.o read_pdb.o write_pdb.o print_struc.
   parse_restraints.o restrain.o read_ens.o read_pdb2.cpp\
   axisrot.o crand.o sym.o enstrans.o ene_morph.cpp \
   euler2torquemat.o memcpy.o disre.o moderest.o atomdensitygrid.o \
-  axsym.h axsym.o weight_atoms.o ministate.o grid_sharedfuncs.o
+  axsym.h axsym.o weight_atoms.o ministate.o grid_sharedfuncs.o \
+  nonbon_step.o
 
 OBJ= $(OBJ0) nonbon8.o nonbon_soft.o
 H=state.h max.h grid.h nonbon.h max.fin
