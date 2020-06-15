@@ -99,6 +99,14 @@ double *dlig,
 double *locrests, int *has_locrests,
 const int &seed, char *label, double &energy, double *energies, int &lablen);
 
+extern "C" void monte_step_(
+const int &cartstatehandle,const int &ministatehandle, 
+int *nhm, int *nihm, const int &nlig, 
+int *ens,  double *phi, double *ssi, double *rot, double *xa, double *ya, double *za, double *morph,
+double *dlig, 
+double *locrests, int *has_locrests,
+const int &seed, char *label, double &energy, double *energies, int &lablen);
+
 extern "C" void monte_min_(
 const int &cartstatehandle,const int &ministatehandle,
 int *nhm, int*nihm, const int &nlig,
@@ -298,7 +306,7 @@ int main(int argc, char *argv[]) {
       );
     }
     if (imc == 1) {
-      monte_(
+      monte_step(
         cartstatehandle, ministatehandle,
         nhm, nihm, nlig,
         &ens[0], &phi[0], &ssi[0], &rot[0], 
